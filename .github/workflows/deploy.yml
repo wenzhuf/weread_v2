@@ -1,0 +1,61 @@
+name: wxread
+
+on:
+  schedule:
+    - cron: '0 1,9,18 * * *'  # 每天11点和下午6点（UTC）
+  workflow_dispatch:  # 手动触发
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    environment: AutoRead
+
+    steps:
+
+    - name: Set DNS to Google's DNS
+      run: |
+        echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
+        echo "nameserver 8.8.4.4" | sudo tee -a /etc/resolv.conf
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install \
+          certifi==2024.8.30 \
+          charset-normalizer==3.4.0 \
+          idna==3.10 \
+          requests==2.32.3 \
+          urllib3==2.2.3 \
+          playwright
+
+    - name: Install Playwright browsers
+      run: |
+        python -m playwright install chromium
+
+    - name: Run deployment script
+      env:
+        WXREAD_CURL_BASH: ${{ secrets.WXREAD_CURL_BASH }}
+        PUSH_METHOD: ${{ secrets.PUSH_METHOD }}
+        PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+        WXPUSHER_SPT: ${{ secrets.WXPUSHER_SPT }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        READ_NUM: ${{ vars.READ_NUM }}
+      run: |
+        python main.py
