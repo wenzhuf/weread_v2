@@ -20,6 +20,7 @@ TELEGRAM_CHAT_ID = "" or os.getenv("TELEGRAM_CHAT_ID")
 WXPUSHER_SPT = "" or os.getenv("WXPUSHER_SPT")
 # read接口的bash命令，本地部署时可对应替换headers、cookies
 curl_str = os.getenv('WXREAD_CURL_BASH')
+LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG").upper()
 
 
 def convert(curl_command):

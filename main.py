@@ -6,11 +6,11 @@ import random
 import json
 import os
 from push import push
-from config import cookies, READ_NUM, PUSH_METHOD
+from config import cookies, READ_NUM, PUSH_METHOD, LOG_LEVEL
 
 # 配置日志格式
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)-8s - %(message)s')
+logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s - %(levelname)-8s - %(message)s')
 
 READ_PAGE_URL = "https://weread.qq.com/web/reader/ce032b305a9bc1ce0b0dd2akf4b32ef025ef4b9ec30acd6"
 READ_TIME_REPORT_URL = "https://weread.qq.com/web/book/read"
@@ -23,6 +23,7 @@ class ReadTracker:
     def handle_request(self, request):
         if READ_TIME_REPORT_URL in request.url:
             payload_str = request.post_data
+            logging.debug(payload_str)
             if payload_str:
                 try:
                     payload = json.loads(payload_str)
@@ -33,6 +34,10 @@ class ReadTracker:
                         logging.info(
                             f"⏱️ 第 {self.total_read_attempt} 次阅读成功, 阅读时间：{read_time}s, "
                             f"总计已阅读：{self.total_read_time_in_seconds // 60} 分钟..."
+                        )
+                    if payload.get("reviews"):
+                        logging.info(
+                            f"点击到了一个review: {payload_str}"
                         )
                 except json.JSONDecodeError:
                     logging.error("⚠️ post_data 不是合法 JSON")
@@ -72,7 +77,7 @@ def main():
     tracker = ReadTracker()
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False, args=["--disable-blink-features=AutomationControlled"])
+        browser = p.chromium.launch(headless=True, args=["--disable-blink-features=AutomationControlled"])
         context = browser.new_context(
             record_video_dir="videos/",
             record_video_size={"width": 1280, "height": 720},
