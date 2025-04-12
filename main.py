@@ -6,13 +6,12 @@ import random
 import json
 import os
 from push import push
-from config import cookies, READ_NUM, PUSH_METHOD, LOG_LEVEL
+from config import cookies, READ_NUM, PUSH_METHOD, LOG_LEVEL, READ_BOOK_LINK
 
 # 配置日志格式
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s - %(levelname)-8s - %(message)s')
 
-READ_PAGE_URL = "https://weread.qq.com/web/reader/ce032b305a9bc1ce0b0dd2akf4b32ef025ef4b9ec30acd6"
 READ_TIME_REPORT_URL = "https://weread.qq.com/web/book/read"
 
 class ReadTracker:
@@ -72,6 +71,7 @@ def move_to_next_page(page):
 
 def main():
     logging.info(f"⏱️ 准备开始阅读！目标时长: {READ_NUM} 分钟...")
+    logging.info(f"⏱️ 准备阅读：{READ_BOOK_LINK}")
     # 创建目录（如果不存在）
     os.makedirs("screenshot", exist_ok=True)
     tracker = ReadTracker()
@@ -92,7 +92,7 @@ def main():
         context.add_cookies(cookies_list)
 
         page = context.new_page()
-        page.goto(READ_PAGE_URL)
+        page.goto(READ_BOOK_LINK)
         page.wait_for_timeout(5000)
         logging.info("⏱️ 目标网页已打开。")
         page.on("request", tracker.handle_request)
