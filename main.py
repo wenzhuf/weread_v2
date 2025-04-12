@@ -27,12 +27,13 @@ class ReadTracker:
                 try:
                     payload = json.loads(payload_str)
                     read_time = int(payload.get("rt", 0))
-                    self.total_read_time_in_seconds += read_time
-                    self.total_read_attempt += 1
-                    logging.info(
-                        f"⏱️ 第 {self.total_read_attempt} 次阅读成功, 阅读时间：{read_time}s, "
-                        f"总计已阅读：{self.total_read_time_in_seconds // 60} 分钟..."
-                    )
+                    if read_time > 0:
+                        self.total_read_time_in_seconds += read_time
+                        self.total_read_attempt += 1
+                        logging.info(
+                            f"⏱️ 第 {self.total_read_attempt} 次阅读成功, 阅读时间：{read_time}s, "
+                            f"总计已阅读：{self.total_read_time_in_seconds // 60} 分钟..."
+                        )
                 except json.JSONDecodeError:
                     logging.error("⚠️ post_data 不是合法 JSON")
 
@@ -47,6 +48,23 @@ def screenshot(page):
     logging.error(f"📸 已保存截图到 {screenshot_path}")
 
 
+def mimic_reading(page):
+    for i in range(30):
+        x = 100 + (200 - 100) * i / 30
+        y = 100 + (200 - 100) * i / 30
+        page.mouse.move(x, y)
+        time.sleep(1 / 10)  # 每步约 33 毫秒，总共 1 秒钟
+    page.mouse.click(200, 200) # 点2下鼠标
+    time.sleep(5)
+    page.mouse.click(200, 200)
+    time.sleep(random.randint(20, 30))
+
+
+def move_to_next_page(page):
+    button = page.locator("button[class*='renderTarget_pager_button_right']")
+    button.click(timeout=10000)
+
+
 def main():
     logging.info(f"⏱️ 准备开始阅读！目标时长: {READ_NUM} 分钟...")
     # 创建目录（如果不存在）
@@ -54,11 +72,12 @@ def main():
     tracker = ReadTracker()
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(headless=False, args=["--disable-blink-features=AutomationControlled"])
         context = browser.new_context(
             record_video_dir="videos/",
             record_video_size={"width": 1280, "height": 720},
         )
+
         cookies_list = [
             {
                 "name": name,
@@ -77,16 +96,12 @@ def main():
         page.on("request", tracker.handle_request)
 
         while tracker.total_read_time_in_seconds < READ_NUM * 60:
-            random_read_time = random.randint(28, 40)
-            screenshot(page)
             try:
-                button = page.locator("button[class*='renderTarget_pager_button_right']")
-                button.click(timeout=10000)
+                move_to_next_page(page)
             except Exception as e:
                 logging.error(f"点击失败，可能找不到按钮：{e}")
-
-
-            time.sleep(random_read_time)
+                screenshot(page)
+            mimic_reading(page)
 
         browser.close()
 
