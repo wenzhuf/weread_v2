@@ -10,13 +10,7 @@ from config import cookies, READ_NUM, PUSH_METHOD, LOG_LEVEL
 
 # 配置日志格式
 logger = logging.getLogger(__name__)
-# 设置 root logger 等级（防止被其他模块污染）
-logging.getLogger().setLevel(LOG_LEVEL)
-# 添加 handler（如果没有的话）
-if not logger.handlers:
-    handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)-8s - %(message)s'))
-    logger.addHandler(handler)
+logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s - %(levelname)-8s - %(message)s')
 
 READ_PAGE_URL = "https://weread.qq.com/web/reader/ce032b305a9bc1ce0b0dd2akf4b32ef025ef4b9ec30acd6"
 READ_TIME_REPORT_URL = "https://weread.qq.com/web/book/read"
