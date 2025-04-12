@@ -2,6 +2,7 @@ from playwright.sync_api import sync_playwright
 import time
 import logging
 import random
+import json
 from push import push
 from config import cookies, READ_NUM, PUSH_METHOD
 
@@ -17,10 +18,15 @@ total_read_attempt = 0
 
 def get_read_time(request):
     if READ_TIME_REPORT_URL in request.url:
-        payload = request.post_data
-        read_time = payload["rt"]
-        total_read_time_in_seconds += read_time
-        logging.info(f"⏱️ 第 {total_read_attempt + 1} 次阅读成功, 阅读时间：{read_time}s, 总计已阅读：{total_read_time_in_seconds // 60}分钟...")
+        payload_str = request.post_data
+        if payload_str:
+            try:
+                payload = json.loads(payload_str)
+                read_time = int(payload["rt"])
+                total_read_time_in_seconds += read_time
+                logging.info(f"⏱️ 第 {total_read_attempt + 1} 次阅读成功, 阅读时间：{read_time}s, 总计已阅读：{total_read_time_in_seconds // 60}分钟...")
+            except json.JSONDecodeError:
+                logging.error("⚠️ post_data 不是合法 JSON")
 
 def main():
     logging.info(f"⏱️ 准备开始阅读！目标时长: {READ_NUM}分钟...")
