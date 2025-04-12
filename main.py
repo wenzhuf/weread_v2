@@ -43,10 +43,7 @@ def main():
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        context = browser.new_context(
-            record_video_dir="videos/",
-            record_video_size={"width": 1280, "height": 720},
-        )
+        context = browser.new_context()
         cookies_list = [
             {
                 "name": name,

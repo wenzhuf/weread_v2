@@ -60,6 +60,13 @@ jobs:
       run: |
         python main.py
 
+    - name: Upload screenshot on failure
+      if: always()
+      uses: actions/upload-artifact@v4.6.2
+      with:
+        name: screenshots
+        path: screenshot/
+
     - name: Upload video artifact
       uses: actions/upload-artifact@v4.6.2
       with:
