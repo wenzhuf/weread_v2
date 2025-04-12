@@ -59,7 +59,7 @@ jobs:
         READ_NUM: ${{ vars.READ_NUM }}
       run: |
         python main.py
-      timeout-minutes: 60
+      timeout-minutes: 180
 
     - name: Upload screenshot on failure
       if: always()
