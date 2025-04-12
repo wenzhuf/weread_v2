@@ -61,7 +61,7 @@ jobs:
         python main.py
 
     - name: Upload video artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4.6.2
       with:
         name: test-videos
         path: videos/
