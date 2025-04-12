@@ -17,46 +17,50 @@ total_read_attempt = 0
 
 def get_read_time(request):
     if READ_TIME_REPORT_URL in request.url:
-        payload = request.post_data()  # None if not POST
+        payload = request.post_data
         read_time = payload["rt"]
         total_read_time_in_seconds += read_time
         logging.info(f"⏱️ 第 {total_read_attempt + 1} 次阅读成功, 阅读时间：{read_time}s, 总计已阅读：{total_read_time_in_seconds // 60}分钟...")
 
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
-    context = browser.new_context(
-        record_video_dir="videos/",
-        record_video_size={"width": 1280, "height": 720},
-    )
-    cookies_list = [
-        {
-            "name": name,
-            "value": value,
-            "domain": ".weread.qq.com",
-            "path": "/"
-        }
-        for name, value in cookies.items()
-    ]
-    context.add_cookies(cookies_list)
+def main():
+    logging.info(f"⏱️ 准备开始阅读！目标时长: {READ_NUM}分钟...")
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(
+            record_video_dir="videos/",
+            record_video_size={"width": 1280, "height": 720},
+        )
+        cookies_list = [
+            {
+                "name": name,
+                "value": value,
+                "domain": ".weread.qq.com",
+                "path": "/"
+            }
+            for name, value in cookies.items()
+        ]
+        context.add_cookies(cookies_list)
 
-    page = context.new_page()
-    page.goto(READ_PAGE_URL)
-    page.wait_for_timeout(5000)
-    
-    page.on("request", get_read_time)
+        page = context.new_page()
+        page.goto(READ_PAGE_URL)
+        page.wait_for_timeout(5000)
+        logging.info("⏱️ 目标网页已打开。")
+        page.on("request", get_read_time)
 
-    while total_read_time_in_seconds < READ_NUM * 60:
-        random_read_time = random.randint(28, 40)
-        try:
-            button = page.locator("button[class*='renderTarget_pager_button_right']")
-            button.click(timeout=10000)  # 最多等待10秒找元素
-        except Exception as e:
-            logging.error("点击失败，可能找不到按钮：", e)
-        time.sleep(random_read_time)
-    browser.close()
+        while total_read_time_in_seconds < READ_NUM * 60:
+            random_read_time = random.randint(28, 40)
+            try:
+                button = page.locator("button[class*='renderTarget_pager_button_right']")
+                button.click(timeout=10000)  # 最多等待10秒找元素
+            except Exception as e:
+                logging.error("点击失败，可能找不到按钮：", e)
+            time.sleep(random_read_time)
+        browser.close()
 
-logging.info("🎉 阅读脚本已完成！")
+    logging.info("🎉 阅读脚本已完成！")
 
-if PUSH_METHOD not in (None, ''):
-    logging.info("⏱️ 开始推送...")
-    push(f"🎉 微信读书自动阅读完成！\n⏱️ 阅读时长：{total_read_time_in_seconds // 60}分钟。", PUSH_METHOD)
+    if PUSH_METHOD not in (None, ''):
+        logging.info("⏱️ 开始推送...")
+        push(f"🎉 微信读书自动阅读完成！\n⏱️ 阅读时长：{total_read_time_in_seconds // 60}分钟。", PUSH_METHOD)
+
+main()
