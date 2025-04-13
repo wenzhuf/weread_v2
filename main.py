@@ -18,6 +18,7 @@ class ReadTracker:
     def __init__(self):
         self.total_read_time_in_seconds = 0
         self.total_read_attempt = 0
+        self.last_read_report_time = time.time()
 
     def handle_request(self, request):
         if READ_TIME_REPORT_URL in request.url:
@@ -28,6 +29,7 @@ class ReadTracker:
                     payload = json.loads(payload_str)
                     read_time = int(payload.get("rt", 0))
                     if read_time > 0:
+                        self.last_read_report_time = time.time()
                         self.total_read_time_in_seconds += read_time
                         self.total_read_attempt += 1
                         logging.info(
@@ -99,6 +101,14 @@ def main():
 
         while tracker.total_read_time_in_seconds < READ_NUM * 60:
             try:
+                # Check if too much time has passed without a read report
+                time_since_last_report = time.time() - tracker.last_read_report_time
+                if time_since_last_report > 60:
+                    logging.warning(f"⚠️ {int(time_since_last_report)}s 内无阅读上报，已截图")
+                    screenshot(page)
+                    tracker.last_read_report_time = time.time()  # Reset after handling
+                if time_since_last_report > 600:
+                    raise RuntimeError("上报read report超时。")
                 move_to_next_page(page)
             except Exception as e:
                 logging.error(f"点击失败，可能找不到按钮：{e}")
