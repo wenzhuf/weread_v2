@@ -44,15 +44,19 @@ class ReadTracker:
                     logging.error("⚠️ post_data 不是合法 JSON")
 
 
-def screenshot(page):
+def screenshot(page, is_periodic=False):
     # 构造文件名（带时间戳）
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    screenshot_path = f"screenshot/fail_click_{timestamp}.png"
-
+    if is_periodic:
+        screenshot_path = "screenshot/last.png"  # 定期截图保存覆盖
+    else:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        screenshot_path = f"screenshot/fail_{timestamp}.png"
     # 截图
     page.screenshot(path=screenshot_path)
-    logging.error(f"📸 已保存截图到 {screenshot_path}")
-
+    if is_periodic:
+        logging.info(f"🖼️ 定期截图已保存到 {screenshot_path}")
+    else:
+        logging.error(f"📸 异常时截图已保存到 {screenshot_path}")
 
 def mimic_reading(page):
     for i in range(30):
@@ -100,6 +104,7 @@ def main():
         page.on("request", tracker.handle_request)
 
         while tracker.total_read_time_in_seconds < READ_NUM * 60:
+            screenshot(page, is_periodic=True) # periodically screenshot
             try:
                 # Check if too much time has passed without a read report
                 time_since_last_report = time.time() - tracker.last_read_report_time
