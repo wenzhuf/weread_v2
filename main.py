@@ -113,10 +113,13 @@ def main():
                     screenshot(page)
                 elif time_since_last_report > 120:
                     # 尝试刷新页面
+                    logging.warning(f"⚠️ 120s 内无阅读上报，刷新页面...")
                     page.goto(READ_BOOK_LINK)
                     page.wait_for_timeout(5000)
                 elif time_since_last_report > 600:
-                    raise RuntimeError("上报read report超时。")
+                    error_message = "⚠️ 120s 内无阅读上报，terminating..."
+                    logging.critical(error_message)
+                    raise RuntimeError(error_message)
                 else:
                     move_to_next_page(page)
             except Exception as e:
