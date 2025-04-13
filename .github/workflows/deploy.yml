@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '0 1,9,18 * * *'  # 每天11点和下午6点（UTC）
   workflow_dispatch:  # 手动触发
+    inputs:
+      read_duration:
+        description: '阅读时长（分钟），默认为${{ vars.READ_NUM }}'
+        required: false
+        default: ${{ vars.READ_NUM }}
 
 jobs:
   deploy:
