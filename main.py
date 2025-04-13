@@ -106,10 +106,14 @@ def main():
                 if time_since_last_report > 60:
                     logging.warning(f"⚠️ {int(time_since_last_report)}s 内无阅读上报，已截图")
                     screenshot(page)
-                    tracker.last_read_report_time = time.time()  # Reset after handling
-                if time_since_last_report > 600:
+                elif time_since_last_report > 120:
+                    # 尝试刷新页面
+                    page.goto(READ_BOOK_LINK)
+                    page.wait_for_timeout(5000)
+                elif time_since_last_report > 600:
                     raise RuntimeError("上报read report超时。")
-                move_to_next_page(page)
+                else:
+                    move_to_next_page(page)
             except Exception as e:
                 logging.error(f"点击失败，可能找不到按钮：{e}")
                 screenshot(page)
