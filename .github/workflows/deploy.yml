@@ -86,3 +86,18 @@ jobs:
       with:
         name: test-videos
         path: videos/
+
+    - name: Send Discord Notification
+      if: always()
+      uses: sarisia/actions-status-discord@v1
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        status: ${{ job.status }}
+        title: "📖 WeRead 自动阅读任务"
+        description: |
+          🧱 **Workflow**: ${{ github.workflow }} / ${{ github.job }}
+          📦 **Run Link**: [Link](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          🧑‍💻 **提交者**: ${{ github.actor }}
+          🌿 **分支**: ${{ github.ref_name }}
+          📝 **提交消息**: ${{ github.event.head_commit.message }}
+          ✅ **Commit**: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
