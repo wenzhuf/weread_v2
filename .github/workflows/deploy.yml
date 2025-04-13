@@ -99,5 +99,5 @@ jobs:
           📦 **Run Link**: [Link](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
           🧑‍💻 **提交者**: ${{ github.actor }}
           🌿 **分支**: ${{ github.ref_name }}
-          📝 **提交消息**: ${{ github.event.head_commit.message }}
+          📝 **提交消息**: ${{ github.event.head_commit.message || github.event.workflow_run.head_commit.message || '无提交消息' }}
           ✅ **Commit**: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
