@@ -81,7 +81,7 @@ jobs:
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         READ_BOOK_LINK: ${{ secrets.READ_BOOK_LINK }}
-        READ_NUM: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.read_duration || github.event_name == 'schedule' && vars.READ_NUM || 10 }}
+        READ_NUM: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.read_duration || github.event_name == 'schedule' && vars.READ_NUM || 1 }}
         LOG_LEVEL: ${{ vars.LOG_LEVEL }}
       run: |
         python main.py
@@ -104,11 +104,14 @@ jobs:
     - name: Store summary in an environment variable
       id: get_summary
       run: |
+        echo "Debug: Summary content from \$GITHUB_STEP_SUMMARY:"
+        cat "$GITHUB_STEP_SUMMARY"
         {
           echo "WORKFLOW_SUMMARY<<EOF"
           cat "$GITHUB_STEP_SUMMARY"
           echo "EOF"
         } >> "$GITHUB_ENV"
+        cat "$GITHUB_ENV"
 
     - name: Send Discord Notification
       if: always()
