@@ -9,6 +9,9 @@ on:
         description: '阅读时长（分钟），默认为60'
         required: false
         default: 60
+  push:
+    branches:
+      - master
 
 jobs:
   deploy:
@@ -24,6 +27,12 @@ jobs:
 
     - name: Checkout repository
       uses: actions/checkout@v2
+
+    - name: Get commit message
+      id: get_commit
+      run: |
+        message=$(git log -1 --pretty=%s)
+        echo "COMMIT_MESSAGE=$message" >> $GITHUB_OUTPUT
 
     - name: Cache Python dependencies
       uses: actions/cache@v3
@@ -72,7 +81,7 @@ jobs:
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         READ_BOOK_LINK: ${{ secrets.READ_BOOK_LINK }}
-        READ_NUM: ${{ github.event.inputs.read_duration || vars.READ_NUM || 60 }}
+        READ_NUM: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.read_duration || github.event_name == 'schedule' && vars.READ_NUM || 10 }}
         LOG_LEVEL: ${{ vars.LOG_LEVEL }}
       run: |
         python main.py
@@ -92,6 +101,12 @@ jobs:
         name: test-videos
         path: videos/
 
+    - name: Store summary in an environment variable
+      id: get_summary
+      run: |
+        summary=$(cat $GITHUB_STEP_SUMMARY)
+        echo "WORKFLOW_SUMMARY=$summary" >> $GITHUB_ENV
+
     - name: Send Discord Notification
       if: always()
       uses: sarisia/actions-status-discord@v1
@@ -100,11 +115,13 @@ jobs:
         status: ${{ job.status }}
         title: "📖 WeRead 自动阅读任务"
         description: |
-          🧱 **Workflow**: ${{ github.workflow }} / ${{ github.job }}
-          📦 **Run Link**: [Link](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          📈 **Summary**: ${{ env.WORKFLOW_SUMMARY }}
+
+          🚧 **Workflow**: ${{ github.workflow }} / ${{ github.job }}
+          🚀 **Run**: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
           🧑‍💻 **提交者**: ${{ github.actor }}
-          🌿 **分支**: ${{ github.ref_name }}
-          📝 **提交消息**: ${{ github.event.head_commit.message || github.event.workflow_run.head_commit.message || '无提交消息' }}
-          ✅ **Commit**: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+          🔀 **分支**: ${{ github.ref_name }}
+          📝 **提交消息**: ${{ steps.get_commit.outputs.COMMIT_MESSAGE || '无提交消息' }}
+          ⚡ **Commit**: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
         username: GitHub Actions
         avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
