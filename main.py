@@ -7,6 +7,7 @@ import json
 import os
 from push import push
 from config import cookies, READ_NUM, PUSH_METHOD, LOG_LEVEL, READ_BOOK_LINK
+from github_utils import update_github_summary, update_github_output
 
 # 配置日志格式
 logger = logging.getLogger(__name__)
@@ -75,24 +76,6 @@ def move_to_next_page(page):
     button.click(timeout=10000)
 
 
-def update_github_summary(message: str):
-    """
-    Appends a message to the GitHub Actions job summary.
-
-    Parameters:
-    - message (str): The text to append. Markdown is supported.
-    """
-    summary_path = os.getenv("GITHUB_STEP_SUMMARY")
-    if summary_path:
-        try:
-            with open(summary_path, "a", encoding="utf-8") as f:
-                f.write(message + "\n")
-        except Exception as e:
-            logging.warning(f"Failed to write to GitHub summary: {e}")
-    else:
-        logging.info("GITHUB_STEP_SUMMARY not set. Running outside of GitHub Actions?")
-
-
 def main():
     logging.info(f"⏱️ 准备开始阅读！目标时长: {READ_NUM} 分钟...")
     logging.info(f"⏱️ 准备阅读：{READ_BOOK_LINK}")
@@ -151,6 +134,7 @@ def main():
 
     success_message = f"🎉 微信读书自动阅读完成！\n⏱️ 阅读时长：{tracker.total_read_time_in_seconds // 60} 分钟。"
     update_github_summary(success_message)
+    update_github_output(key="summary", value=success_message)
     if PUSH_METHOD:
         logging.info("⏱️ 开始推送...")
         push(success_message, PUSH_METHOD)

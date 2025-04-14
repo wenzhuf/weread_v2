@@ -73,6 +73,7 @@ jobs:
         fc-list :lang=zh | head -n 20
 
     - name: Run deployment script
+      id: run_auto_read
       env:
         WXREAD_CURL_BASH: ${{ secrets.WXREAD_CURL_BASH }}
         PUSH_METHOD: ${{ secrets.PUSH_METHOD }}
@@ -101,18 +102,6 @@ jobs:
         name: test-videos
         path: videos/
 
-    - name: Store summary in an environment variable
-      id: get_summary
-      run: |
-        echo "Debug: Summary content from \$GITHUB_STEP_SUMMARY:"
-        cat "$GITHUB_STEP_SUMMARY"
-        {
-          echo "WORKFLOW_SUMMARY<<EOF"
-          cat "$GITHUB_STEP_SUMMARY"
-          echo "EOF"
-        } >> "$GITHUB_ENV"
-        cat "$GITHUB_ENV"
-
     - name: Send Discord Notification
       if: always()
       uses: sarisia/actions-status-discord@v1
@@ -121,8 +110,7 @@ jobs:
         status: ${{ job.status }}
         title: "📖 WeRead 自动阅读任务"
         description: |
-          📈 **Summary**: ${{ env.WORKFLOW_SUMMARY }}
-
+          📈 **Summary**: ${{ steps.run_auto_read.outputs.summary || 'No Summary' }}
           🚧 **Workflow**: ${{ github.workflow }} / ${{ github.job }}
           🚀 **Run**: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
           🧑‍💻 **提交者**: ${{ github.actor }}
