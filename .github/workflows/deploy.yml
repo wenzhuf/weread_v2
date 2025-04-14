@@ -104,8 +104,11 @@ jobs:
     - name: Store summary in an environment variable
       id: get_summary
       run: |
-        summary=$(cat $GITHUB_STEP_SUMMARY)
-        echo "WORKFLOW_SUMMARY=$summary" >> $GITHUB_ENV
+        {
+          echo "WORKFLOW_SUMMARY<<EOF"
+          cat "$GITHUB_STEP_SUMMARY"
+          echo "EOF"
+        } >> "$GITHUB_ENV"
 
     - name: Send Discord Notification
       if: always()
