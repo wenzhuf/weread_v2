@@ -21,7 +21,7 @@ def update_github_output(key: str, value: str):
     if output_file:
         try:
             with open(output_file, "a", encoding="utf-8") as f:
-                f.write(f"{key}={value}\n")
+                f.write(f"{key}=<<EOV\n{value}\nEOV\n")
         except Exception as e:
             logging.warning(f"Failed to write to GitHub output: {e}")
     else:
