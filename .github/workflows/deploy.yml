@@ -81,7 +81,7 @@ jobs:
         LOG_LEVEL: ${{ vars.LOG_LEVEL }}
       run: |
         python main.py
-      timeout-minutes: 180
+      timeout-minutes: 90
 
     - name: Upload screenshot on failure
       if: always()
