@@ -109,10 +109,10 @@ def main():
             try:
                 # Check if too much time has passed without a read report
                 time_since_last_report = time.time() - tracker.last_read_report_time
-                if time_since_last_report > 60:
+                if time_since_last_report > 60 and time_since_last_report <= 120:
                     logging.warning(f"⚠️ {int(time_since_last_report)}s 内无阅读上报，已截图")
                     screenshot(page)
-                elif time_since_last_report > 120:
+                elif time_since_last_report > 120 and time_since_last_report <= 600:
                     # 尝试刷新页面
                     logging.warning(f"⚠️ 120s 内无阅读上报，刷新页面...")
                     page.goto(READ_BOOK_LINK)
