@@ -131,6 +131,7 @@ def main():
             }
             for name, value in cookies.items()
         ]
+        logging.info(f"📝 准备添加 cookies: {cookies_list}")
         context.add_cookies(cookies_list)
 
         page = context.new_page()
