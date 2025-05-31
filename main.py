@@ -86,7 +86,7 @@ def daily_award(context):
 
         headers = {
             "Host": "weread.qq.com",
-            "Cookie": f"wr_skey={wr_skey}; wr_vid={wr_vid}; wr_logined=1",
+            "Cookie": f"wr_skey=SqYPduxK; wr_vid={wr_vid}; wr_logined=1",
             "content-type": "application/json",
             "channelid": "AppStore",
             "accept": "*/*",
@@ -94,15 +94,15 @@ def daily_award(context):
             "accept-language": "en-US;q=1, zh-Hans-US;q=0.9",
             "basever": "9.3.1.37",
             "user-agent": "WeRead/9.3.1 (iPhone; iOS 18.5; Scale/3.00)",
-            "skey": wr_skey,
+            "skey": "SqYPduxK",
             "v": "9.3.1.37",
         }
 
         payload = {
             "issue": (datetime.now() - timedelta(days=datetime.now().weekday())).strftime("%Y%m%d")
         }
-        logging.info(f"data: {json.dumps(payload)}")
-        logging.info(f"headers: {headers}")
+        logging.debug(f"data: {json.dumps(payload)}")
+        logging.debug(f"headers: {headers}")
         url = "https://weread.qq.com/membership-promotions/api/receive?platform=ios"
         response = context.request.post(url, data=json.dumps(payload), headers=headers)
         logging.info(f"🎁 领奖请求已发送，返回状态码: {response.status}")
@@ -131,7 +131,6 @@ def main():
             }
             for name, value in cookies.items()
         ]
-        logging.info(f"📝 准备添加 cookies: {cookies_list}")
         context.add_cookies(cookies_list)
 
         page = context.new_page()
@@ -140,29 +139,29 @@ def main():
         logging.info("⏱️ 目标网页已打开。")
         page.on("request", tracker.handle_request)
 
-        # while tracker.total_read_time_in_seconds < READ_NUM * 60:
-        #     screenshot(page, is_periodic=True) # periodically screenshot
-        #     try:
-        #         # Check if too much time has passed without a read report
-        #         time_since_last_report = time.time() - tracker.last_read_report_time
-        #         if time_since_last_report > 60 and time_since_last_report <= 120:
-        #             logging.warning(f"⚠️ {int(time_since_last_report)}s 内无阅读上报，已截图")
-        #             screenshot(page)
-        #         elif time_since_last_report > 120 and time_since_last_report <= 600:
-        #             # 尝试刷新页面
-        #             logging.warning(f"⚠️ 120s 内无阅读上报，刷新页面...")
-        #             page.goto(READ_BOOK_LINK)
-        #             page.wait_for_timeout(5000)
-        #         elif time_since_last_report > 600:
-        #             error_message = "⚠️ 120s 内无阅读上报，terminating..."
-        #             logging.critical(error_message)
-        #             raise RuntimeError(error_message)
-        #         else:
-        #             move_to_next_page(page)
-        #     except Exception as e:
-        #         logging.error(f"点击失败，可能找不到按钮：{e}")
-        #         screenshot(page)
-        #     mimic_reading(page)
+        while tracker.total_read_time_in_seconds < READ_NUM * 60:
+            screenshot(page, is_periodic=True) # periodically screenshot
+            try:
+                # Check if too much time has passed without a read report
+                time_since_last_report = time.time() - tracker.last_read_report_time
+                if time_since_last_report > 60 and time_since_last_report <= 120:
+                    logging.warning(f"⚠️ {int(time_since_last_report)}s 内无阅读上报，已截图")
+                    screenshot(page)
+                elif time_since_last_report > 120 and time_since_last_report <= 600:
+                    # 尝试刷新页面
+                    logging.warning(f"⚠️ 120s 内无阅读上报，刷新页面...")
+                    page.goto(READ_BOOK_LINK)
+                    page.wait_for_timeout(5000)
+                elif time_since_last_report > 600:
+                    error_message = "⚠️ 120s 内无阅读上报，terminating..."
+                    logging.critical(error_message)
+                    raise RuntimeError(error_message)
+                else:
+                    move_to_next_page(page)
+            except Exception as e:
+                logging.error(f"点击失败，可能找不到按钮：{e}")
+                screenshot(page)
+            mimic_reading(page)
         # Daily membership award
         daily_award(context)
         browser.close()
