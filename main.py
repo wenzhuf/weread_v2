@@ -5,6 +5,7 @@ import logging
 import random
 import json
 import os
+from datetime import datetime, timedelta
 from push import push
 from config import cookies, READ_NUM, PUSH_METHOD, LOG_LEVEL, READ_BOOK_LINK
 from github_utils import update_github_summary, update_github_output
@@ -75,6 +76,39 @@ def move_to_next_page(page):
     button = page.locator("button[class*='renderTarget_pager_button_right']")
     button.click(timeout=10000)
 
+def daily_award(context):
+    try:
+        wr_skey = cookies.get("wr_skey")
+        wr_vid = cookies.get("wr_vid")
+        if not wr_skey or not wr_vid:
+            logging.warning("⚠️ cookies 中缺少 wr_skey 或 wr_vid，跳过领奖")
+            return
+
+        headers = {
+            "Host": "weread.qq.com",
+            "Cookie": f"wr_skey={wr_skey}; wr_vid={wr_vid}; wr_logined=1",
+            "content-type": "application/json",
+            "channelid": "AppStore",
+            "accept": "*/*",
+            "vid": wr_vid,
+            "accept-language": "en-US;q=1, zh-Hans-US;q=0.9",
+            "basever": "9.3.1.37",
+            "user-agent": "WeRead/9.3.1 (iPhone; iOS 18.5; Scale/3.00)",
+            "skey": wr_skey,
+            "v": "9.3.1.37",
+        }
+
+        payload = {
+            "issue": (datetime.now() - timedelta(days=datetime.now().weekday())).strftime("%Y%m%d")
+        }
+
+        url = "https://weread.qq.com/membership-promotions/api/receive?platform=ios"
+        response = context.request.post(url, data=json.dumps(payload), headers=headers)
+        logging.info(f"🎁 领奖请求已发送，返回状态码: {response.status}")
+        logging.info(f"🎁 返回内容: {str(response.json())}")
+    except Exception as e:
+        logging.error(f"❌ 领奖失败: {e}")
+
 
 def main():
     logging.info(f"⏱️ 准备开始阅读！目标时长: {READ_NUM} 分钟...")
@@ -127,7 +161,8 @@ def main():
                 logging.error(f"点击失败，可能找不到按钮：{e}")
                 screenshot(page)
             mimic_reading(page)
-
+        # Daily membership award
+        daily_award(context)
         browser.close()
 
     logging.info("🎉 阅读脚本已完成！")
@@ -138,5 +173,6 @@ def main():
     if PUSH_METHOD:
         logging.info("⏱️ 开始推送...")
         push(success_message, PUSH_METHOD)
+
 
 main()
