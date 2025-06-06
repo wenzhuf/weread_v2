@@ -91,14 +91,10 @@ async function extractAndSaveSkey() {
     // 拼接 Bark 推送 URL
     const barkURL = `https://api.day.app/VBsbtkpzHhDiTCxSYFZHAP/WeRead%20Skey%20Updated/${encodeURIComponent(skey)}`;
 
-    // 使用 $httpClient GET 方法触发推送
-    let result = $.get(new URL(barkURL), (error, response, data) => {
-        if (error) {
-            $.log(`Bark 推送失败: ${error}`);
-            return;
-        }
-    })
-    $.log(`Bark 推送结果: ${result}`);
+    $task.fetch({
+        method: "GET",
+        url: barkURL
+    }).then(() => $done(), () => $done());
     
     // 通知用户skey保存成功
     $.msg(`微信读书skey已更新`, `新的skey已保存`, skey);
