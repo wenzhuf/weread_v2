@@ -87,17 +87,10 @@ async function extractAndSaveSkey() {
     }
 
     // 保存到 Quantumult X 持久化存储中
+    $.log(`存储微信阅读skey：${skey}`);
     $prefs.setValueForKey(skey, "weread_skey");
-    // 拼接 Bark 推送 URL
-    const barkURL = `https://api.day.app/VBsbtkpzHhDiTCxSYFZHAP/WeRead%20Skey%20Updated/${encodeURIComponent(skey)}`;
-
-    $task.fetch({
-        method: "GET",
-        url: barkURL
-    }).then(() => $done(), () => $done());
-    
-    // 通知用户skey保存成功
-    $.msg(`微信读书skey已更新`, `新的skey已保存`, skey);
+    // 调用每日签到函数
+    await getAward(skey);
     $done();
   } catch (e) {
     // 异常处理
@@ -155,6 +148,51 @@ function injectSkeyCookie() {
     
     // 返回修改后的请求头
     $done({ headers: newHeaders });
+  }
+}
+
+// 计算本周周一日期，格式：yyyyMMdd
+function getCurrentMonday() {
+  const today = new Date();
+  const day = today.getDay(); // 周日=0，周一=1
+  const diff = today.getDate() - day + (day === 0 ? -6 : 1); // 计算本周周一的日期
+  const monday = new Date(today.setDate(diff));
+  const yyyy = monday.getFullYear();
+  const mm = String(monday.getMonth() + 1).padStart(2, '0');
+  const dd = String(monday.getDate()).padStart(2, '0');
+  return `${yyyy}${mm}${dd}`;
+}
+
+async function getAward(skey) {
+  // 组装请求体
+  const issue = getCurrentMonday();
+  const requestBody = JSON.stringify({ issue });
+
+  const apiURL = "https://weread.qq.com/membership-promotions/api/receive?platform=ios";
+
+  try {
+    const response = await $task.fetch({
+      method: "POST",
+      url: apiURL,
+      headers: {
+        "Host": "weread.qq.com",
+        "content-type": "application/json",
+        "channelid": "AppStore",
+        "accept": "*/*",
+        "vid": "70849552",
+        "accept-language": "en-US;q=1, zh-Hans-US;q=0.9",
+        "basever": "9.3.1.37",
+        "user-agent": "WeRead/9.3.1 (iPhone; iOS 18.5; Scale/3.00)",
+        "skey": skey,
+        "v": "9.3.1.37",
+      },
+      body: requestBody,
+    });
+    // 可根据需要处理 response，比如打印或保存
+    const data = JSON.parse(response.body);
+    $.msg("微信读书每日签到", `获得${data.money}${data.name}`);
+  } catch (error) {
+    $.msg("微信读书每日签到失败：", error);
   }
 }
 
