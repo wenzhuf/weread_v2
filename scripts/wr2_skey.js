@@ -163,7 +163,25 @@ function getCurrentMonday() {
   return `${yyyy}${mm}${dd}`;
 }
 
+/**
+ * 计算今天日期，格式：yyyyMMdd
+ */
+function getTodayDate() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  return `${yyyy}${mm}${dd}`;
+}
+
 async function getAward(skey) {
+  const todayDate = getTodayDate();
+  const lastAwardDate = $prefs.valueForKey("weread_last_award_date") || "";
+  // 如果“上次签到日期”与今天相同，则跳过签到
+  if (lastAwardDate === todayDate) {
+    $.log(`今日（${todayDate}）已签到，跳过领奖。`);
+    return;
+  }
   // 组装请求体
   const issue = getCurrentMonday();
   const requestBody = JSON.stringify({ issue });
@@ -190,7 +208,7 @@ async function getAward(skey) {
     });
     // 可根据需要处理 response，比如打印或保存
     const data = JSON.parse(response.body);
-    $.msg("微信读书每日签到", `获得${data.money}${data.name}`);
+    $.msg("微信读书每日签到", `获得${data.money/100}${data.name}`);
   } catch (error) {
     $.msg("微信读书每日签到失败：", error);
   }
