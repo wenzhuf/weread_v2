@@ -88,20 +88,13 @@ async function extractAndSaveSkey() {
 
     // 保存到 Quantumult X 持久化存储中
     $prefs.setValueForKey(skey, "weread_skey");
-    const barkKey = $prefs.valueForKey("bark_key");
     // 拼接 Bark 推送 URL
-    const barkURL = `https://api.day.app/${barkKey}/WeRead%20Skey%20Updated/${encodeURIComponent(skey)}`;
+    const barkURL = `https://api.day.app/VBsbtkpzHhDiTCxSYFZHAP/WeRead%20Skey%20Updated/${encodeURIComponent(skey)}`;
 
     // 使用 $httpClient GET 方法触发推送
-    $.get({ url: barkURL }, (err, resp, data) => {
-      if (err) {
-        $.log(`Bark 推送失败: ${err}`);
-      } else {
-        $.log(`skey 已发送至 Bark: ${skey}`);
-      }
-      $done({});
-    });
-
+    let result = $.get(URL(barkURL), callback(error, response, data))
+    $.log(`Bark 推送结果: ${result}`);
+    
     // 通知用户skey保存成功
     $.msg(`微信读书skey已更新`, `新的skey已保存`, skey);
     $done();
