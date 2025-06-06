@@ -54,7 +54,7 @@ const $ = new Env("weread");
       if (!existingSkey || (currentSkey && existingSkey !== currentSkey)) {
         await extractAndSaveSkey();
       } else {
-        $.log(`已有保存的skey，跳过提取: ${skey}`);
+        $.log(`已有保存的skey，跳过提取: ${currentSkey}`);
         $done({});
       }
     }
