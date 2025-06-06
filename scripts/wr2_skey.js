@@ -24,6 +24,8 @@ const $ = new Env("weread");
 
   // 路由匹配器 - 用于识别不同API请求
   const routeMatcher = {
+    // pay
+    balance: /\/pay\/balance/.test(url),
     // 精确匹配阅读数据详情API
     dataDetail: /\/readdata\/detail/.test(url),
     // 精确匹配用户笔记本API
@@ -35,7 +37,7 @@ const $ = new Env("weread");
   };
   
   // 解构赋值，方便后续使用
-  const { dataDetail, userNotebooks, bookAPIs, reviewAPIs } = routeMatcher;
+  const { balance, dataDetail, userNotebooks, bookAPIs, reviewAPIs } = routeMatcher;
 
   // 判断是否是微信读书App内请求 - 通过User-Agent判断
   const isWeReadApp = $request.headers["User-Agent"].includes("WeRead");
@@ -43,7 +45,7 @@ const $ = new Env("weread");
   // 处理流程分支：App请求和非App请求分别处理
   if (isWeReadApp) {
     // 如果是App请求且是阅读数据详情接口，处理skey提取和保存
-    if(dataDetail) {
+    if(balance) {
       // 首先检查是否已经有保存的skey
       const existingSkey = $prefs.valueForKey("weread_skey");
       const currentSkey = $request.headers["skey"] || $request.headers["Skey"] || "";
@@ -52,15 +54,15 @@ const $ = new Env("weread");
       if (!existingSkey || (currentSkey && existingSkey !== currentSkey)) {
         await extractAndSaveSkey();
       } else {
-        $.log("已有保存的skey，跳过提取");
+        $.log(`已有保存的skey，跳过提取: ${skey}`);
         $done({});
       }
     }
   } else {
-    // 如果是非App请求（如Obsidian插件请求）且是特定API，处理Cookie替换
-    if (userNotebooks || bookAPIs || reviewAPIs) {
-      injectSkeyCookie();
-    } 
+    // // 如果是非App请求（如Obsidian插件请求）且是特定API，处理Cookie替换
+    // if (userNotebooks || bookAPIs || reviewAPIs) {
+    //   injectSkeyCookie();
+    // } 
   }
 })()
   .catch((e) => $.logErr(e))  // 捕获并记录错误
