@@ -94,7 +94,7 @@ async function extractAndSaveSkey() {
     const barkURL = `https://api.day.app/${barkKey}/WeRead%20Skey%20Updated/${encodeURIComponent(skey)}`;
 
     // 使用 $httpClient GET 方法触发推送
-    $httpClient.get({ url: barkURL }, (err, resp, data) => {
+    $.get({ url: barkURL }, (err, resp, data) => {
       if (err) {
         $.log(`Bark 推送失败: ${err}`);
       } else {
