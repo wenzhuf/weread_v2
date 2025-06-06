@@ -88,9 +88,10 @@ async function extractAndSaveSkey() {
 
     // 保存到 Quantumult X 持久化存储中
     $prefs.setValueForKey(skey, "weread_skey");
-
+    $prefs.setValueForKey("VBsbtkpzHhDiTCxSYFZHAP", "bark_key");
+    const barkKey = $prefs.valueForKey("bark_key");
     // 拼接 Bark 推送 URL
-    const barkURL = `https://api.day.app/VBsbtkpzHhDiTCxSYFZHAP/WeRead%20Skey%20Updated/${encodeURIComponent(skey)}`;
+    const barkURL = `https://api.day.app/${barkKey}/WeRead%20Skey%20Updated/${encodeURIComponent(skey)}`;
 
     // 使用 $httpClient GET 方法触发推送
     $httpClient.get({ url: barkURL }, (err, resp, data) => {
