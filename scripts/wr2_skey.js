@@ -209,6 +209,7 @@ async function getAward(skey) {
     // 可根据需要处理 response，比如打印或保存
     const data = JSON.parse(response.body);
     $.msg("微信读书每日签到", `获得${data.money/100}${data.name}`);
+    $prefs.setValueForKey(todayDate, "weread_last_award_date");
   } catch (error) {
     $.msg("微信读书每日签到失败：", error);
   }
