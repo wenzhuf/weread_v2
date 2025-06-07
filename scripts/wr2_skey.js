@@ -167,11 +167,23 @@ function getCurrentMonday() {
  * 计算今天日期，格式：yyyyMMdd
  */
 function getTodayDate() {
+  // Create a new Date object for the current time.
   const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, '0');
-  const dd = String(today.getDate()).padStart(2, '0');
-  return `${yyyy}${mm}${dd}`;
+
+  // Options for formatting the date in the 'Asia/Shanghai' timezone (which is Beijing time).
+  // The 'en-CA' locale is a trick to get the YYYY-MM-DD format.
+  const options = {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  };
+
+  // Create the formatter.
+  const formatter = new Intl.DateTimeFormat('en-CA', options);
+  
+  // Format the date and remove the hyphens to get the YYYYMMDD format.
+  return formatter.format(today).replace(/-/g, '');
 }
 
 async function getAward(skey) {
