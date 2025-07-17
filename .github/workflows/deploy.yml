@@ -79,6 +79,7 @@ jobs:
         READ_BOOK_LINK: ${{ secrets.READ_BOOK_LINK }}
         READ_NUM: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.read_duration || github.event_name == 'schedule' && vars.READ_NUM || 1 }}
         LOG_LEVEL: ${{ vars.LOG_LEVEL }}
+        CONSOLE_LOG_ENABLE: ${{ vars.LOG_LEVEL }}
       run: |
         python main.py
       timeout-minutes: 90
