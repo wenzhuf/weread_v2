@@ -72,8 +72,21 @@ def mimic_reading(page):
 
 
 def move_to_next_page(page):
-    button = page.locator("button[class*='renderTarget_pager_button_right']")
-    button.click(timeout=10000)
+    locator = page.locator("button.renderTarget_pager_button_right")
+    try:
+        locator.wait_for(state="visible", timeout=10000)
+        box = locator.bounding_box()
+        if box:
+            x = box["x"] + box["width"] / 2
+            y = box["y"] + box["height"] / 2
+            page.mouse.move(x, y)
+            time.sleep(5)
+            page.mouse.click(x, y)
+        else:
+            logging.error("❌ 未找到翻页按钮或元素不可见")
+    except Exception as e:
+        logging.error(f"❌ 等待翻页按钮可见时出错: {e}")
+
 
 
 def main():
