@@ -67,6 +67,14 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y fonts-noto-cjk
 
+    - name: Install Xvfb
+      run: sudo apt-get update && sudo apt-get install -y xvfb
+
+    - name: Start Xvfb
+      run: |
+        Xvfb :99 -screen 0 1920x1080x24 &
+        echo "DISPLAY=:99" >> $GITHUB_ENV
+
     - name: Run deployment script
       id: run_auto_read
       env:
