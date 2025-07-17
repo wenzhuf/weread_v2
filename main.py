@@ -6,7 +6,7 @@ import random
 import json
 import os
 from push import push
-from config import cookies, READ_NUM, PUSH_METHOD, LOG_LEVEL, READ_BOOK_LINK
+from config import cookies, READ_NUM, PUSH_METHOD, LOG_LEVEL, READ_BOOK_LINK，CONSOLE_LOG_ENABLE
 from github_utils import update_github_summary, update_github_output
 
 # 配置日志格式
@@ -87,7 +87,16 @@ def move_to_next_page(page):
     except Exception as e:
         logging.error(f"❌ 等待翻页按钮可见时出错: {e}")
 
-
+def handle_console_message(msg):
+    # For each argument in the console message (can be multiple)
+    for arg in msg.args:
+        try:
+            # Evaluate the argument handle back into JSON-serializable Python object
+            obj = arg.json_value()
+            print(f"[Browser Console] {msg.type.upper()}: {obj}")
+        except Exception:
+            # Fallback to text if json_value fails (e.g. for functions or circular refs)
+            print(f"[Browser Console] {msg.type.upper()}: {msg.text}")
 
 def main():
     logging.info(f"⏱️ 准备开始阅读！目标时长: {READ_NUM} 分钟...")
@@ -112,6 +121,9 @@ def main():
         context.add_cookies(cookies_list)
 
         page = context.new_page()
+        if (CONSOLE_LOG_ENABLE):
+            page.on("console", handle_console_message)
+            
         page.goto(READ_BOOK_LINK)
         page.wait_for_timeout(5000)
         logging.info("⏱️ 目标网页已打开。")
