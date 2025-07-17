@@ -22,6 +22,7 @@ WXPUSHER_SPT = "" or os.getenv("WXPUSHER_SPT")
 curl_str = os.getenv('WXREAD_CURL_BASH')
 LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG").upper()
 READ_BOOK_LINK = os.getenv('READ_BOOK_LINK')
+CONSOLE_LOG_ENABLE = os.getenv('CONSOLE_LOG_ENABLE', False)
 
 
 def convert(curl_command):
