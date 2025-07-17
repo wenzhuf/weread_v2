@@ -6,7 +6,7 @@ import random
 import json
 import os
 from push import push
-from config import cookies, READ_NUM, PUSH_METHOD, LOG_LEVEL, READ_BOOK_LINK，CONSOLE_LOG_ENABLE
+from config import cookies, READ_NUM, PUSH_METHOD, LOG_LEVEL, READ_BOOK_LINK, CONSOLE_LOG_ENABLE
 from github_utils import update_github_summary, update_github_output
 
 # 配置日志格式
